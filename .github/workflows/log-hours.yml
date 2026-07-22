@@ -23,4 +23,5 @@ jobs:
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
+          MFA_SECRET: ${{ secrets.MFA_SECRET }}
         run: pnpm exec playwright test
