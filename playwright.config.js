@@ -13,7 +13,6 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: "https://www.smartassessor.co.uk/Account",
     trace: "on-first-retry",
     headless: true,
   },
