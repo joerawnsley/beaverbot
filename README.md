@@ -8,6 +8,20 @@ To automate logging your own hours, you can fork this repo to use the GitHub act
 
 > Please note: the process will fail if an entry is duplicated, so you may have to go in and edit entries manually if it fails.
 
+## Setup
+
+Set up your OneAdvanced login, and add the details to 1Password.
+
+You'll need to:
+
+1. Open and unlock 1Password.
+2. Select the entry for oneadvanced, then select Edit.
+3. Select Add More, then select One-Time Password.
+4. Select the QR code to scan the QR code from your screen or clipboard.
+5. Select Save.
+6. Select Edit, then click into the One-Time Password field.
+7. Copy the value that starts `otpauth://`, this will be your `MFA_SECRET`in GitHub Secrets, or your `.env` file
+
 ## Using GitHub Actions
 
 If you want to run the program as a GitHub Actions workflow, you'll need to add repository secrets.
