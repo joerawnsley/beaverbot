@@ -1,6 +1,6 @@
 # Beaverbot
 
-Beaverbot is an automation tool for logging on-the-job hours in [SmartAssessor](https://www.smartassessor.co.uk/)
+Beaverbot is an automation tool for logging on-the-job hours.
 
 > It's called beaverbot because it does the logging
 
