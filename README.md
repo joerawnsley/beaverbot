@@ -19,6 +19,7 @@ Select `New Repository Secret`, and add:
 ```
 USERNAME (your SmartAssessor username)
 PASSWORD (your SmartAssessor password)
+MFA_SECRET (your MFA secret)
 ```
 
 Commit your changes and manually trigger the GitHub Action to log your on the job hours.
@@ -30,8 +31,20 @@ If you want to run the program locally, you'll need to add a `.env` to the root 
 ```
 USERNAME (your SmartAssessor username)
 PASSWORD (your SmartAssessor password)
+MFA_SECRET (your MFA secret)
 ```
 
 Update `data.json` with your on the job day/hour entries for the week.
+
+An example of `data.json` is available in `data-example.json`, but fields for each entry are:
+
+```
+  {
+    "date": "30/03/2026",
+    "startTime": "09:00",
+    "hoursSpent": "8",
+    "minsSpent": "0" // optional entry
+  },
+```
 
 Run `npx playwright test` to log your on the job hours.
