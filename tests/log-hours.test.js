@@ -7,6 +7,7 @@ const PASSWORD = process.env.PASSWORD;
 const MFA_SECRET = process.env.MFA_SECRET;
 
 test("Log 'On The Job' Hours", async ({ page }) => {
+  // 1. Authentication
   await page.goto("https://education.oneadvanced.com");
   await page.getByRole("textbox", { name: "Username" }).fill(USERNAME);
   await page.getByRole("button", { name: "Continue" }).click();
@@ -14,7 +15,7 @@ test("Log 'On The Job' Hours", async ({ page }) => {
   await page.getByRole("textbox", { name: "Password" }).fill(PASSWORD);
   await page.getByRole("button", { name: "Log In" }).click();
 
-  // MFA
+  // 2. MFA
   const totp = MFA_SECRET.startsWith("otpauth://")
     ? OTPAuth.URI.parse(MFA_SECRET)
     : new OTPAuth.TOTP({
@@ -28,25 +29,27 @@ test("Log 'On The Job' Hours", async ({ page }) => {
   await page.getByRole("textbox", { name: "Verification code" }).fill(otpCode);
   await page.getByRole("button", { name: "Submit" }).click();
 
-  // Navigate to timelog
+  // 3. Navigation
   await page.getByRole("link", { name: "Timelog" }).click();
 
   const entriesContainer = page.locator(".mds-accordion");
 
-  // Add entries
+  // Wait for the timelog accordion to render before reading entries
+  await entriesContainer.first().waitFor({ state: "visible" });
+
+  // 4. Process Entries
   for (const entry of logEntries) {
-    const formattedTimeSpent = `${entry.hoursSpent}h`;
+    const formattedHoursSpent = `${entry.hoursSpent}h`;
     const displayDate = entry.date.replace(/\/20(\d{2})$/, "/$1");
 
-    // Check if the entry is already present in the accordion list
     const existingRow = entriesContainer
-      .locator(".mds-accordion-content__content > div")
+      .locator(".mds-accordion-content__content > div.mu-w-100")
       .filter({ hasText: displayDate })
-      .filter({ hasText: formattedTimeSpent });
+      .filter({ hasText: formattedHoursSpent });
 
     if ((await existingRow.count()) > 0) {
       console.log(
-        `⏩ ${entry.date} (${formattedTimeSpent}) already exists. Skipping...`,
+        `⏩ ${entry.date} (${formattedHoursSpent}) already exists. Skipping...`,
       );
       continue;
     }
@@ -55,15 +58,18 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
     await page.getByRole("button", { name: "Add Hours" }).click();
 
-    // Target modal
     const addHoursModal = page.getByRole("dialog", {
       name: "Add Off-the-Job Hours",
     });
+    await addHoursModal.waitFor({ state: "visible" });
 
-    await addHoursModal.getByLabel("Activity date").fill(entry.date);
-    await page.keyboard.press("Escape");
-    await addHoursModal.getByLabel("Time started").fill(entry.startTime);
-    await page.keyboard.press("Escape");
+    const dateInput = addHoursModal.getByLabel("Activity date");
+    await dateInput.fill(entry.date);
+    await dateInput.blur();
+
+    const timeInput = addHoursModal.getByLabel("Time started");
+    await timeInput.fill(entry.startTime);
+    await timeInput.blur();
 
     await addHoursModal
       .getByRole("spinbutton", { name: "Hours" })
@@ -86,14 +92,15 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
     await addHoursModal.getByRole("button", { name: "Add Hours" }).click();
 
+    // Wait for modal to close
     await addHoursModal.waitFor({ state: "hidden" });
 
-    // Check if entries have been added
+    // Verify row addition
     try {
       await expect(existingRow.first()).toBeVisible({ timeout: 5000 });
-      console.log(`✅ ${entry.date} has been added`);
+      console.log(`✅ ${entry.date} has been added successfully.`);
     } catch (error) {
-      console.error(`Couldn't find ${entry.date}`);
+      console.error(`❌ Couldn't find row for ${entry.date} after submitting.`);
       throw error;
     }
   }
