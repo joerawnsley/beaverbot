@@ -16,22 +16,14 @@ test("Log 'On The Job' Hours", async ({ page }) => {
   await page.getByRole("button", { name: "Log In" }).click();
 
   // 2. MFA
-  try {
-    const mfaInput = page.getByRole("textbox", { name: "Verification code" });
+  const mfaInput = page.locator("#otp");
+  await mfaInput.waitFor({ state: "visible", timeout: 5000 });
 
-    await mfaInput.waitFor({ state: "visible", timeout: 5000 });
+  const totp = OTPAuth.URI.parse(MFA_SECRET);
+  const otpCode = totp.generate();
 
-    console.log("🔑 MFA screen detected. Generating code...");
-    const totp = new OTPAuth.TOTP({ secret: MFA_SECRET });
-    const otpCode = totp.generate();
-
-    await mfaInput.fill(otpCode);
-    await page.getByRole("button", { name: "Submit" }).click();
-  } catch (error) {
-    console.log(
-      "⏩ MFA screen not detected (or skipped). Moving to navigation...",
-    );
-  }
+  await mfaInput.fill(otpCode);
+  await page.getByRole("button", { name: "Submit" }).click();
 
   // 3. Navigation
   await page.getByRole("link", { name: "Timelog" }).click();
