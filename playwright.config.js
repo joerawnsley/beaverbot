@@ -15,7 +15,7 @@ export default defineConfig({
   use: {
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
-    headless: false,
+    headless: true,
   },
 
   projects: [
