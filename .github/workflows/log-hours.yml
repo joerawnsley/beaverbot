@@ -33,3 +33,10 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           MFA_SECRET: ${{ secrets.MFA_SECRET }}
         run: pnpm exec playwright test
+
+      - name: Upload Playwright Artifacts on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-report
+          path: test-results/
