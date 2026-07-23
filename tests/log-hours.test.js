@@ -16,9 +16,14 @@ test("Log 'On The Job' Hours", async ({ page }) => {
   await page.getByRole("button", { name: "Log In" }).click();
 
   // 2. MFA
-  const totp = OTPAuth.URI.parse(MFA_SECRET);
+  const verificationInput = page.getByRole("textbox", {
+    name: "Verification code",
+  });
+  await verificationInput.waitFor({ state: "visible", timeout: 15000 });
 
+  const totp = OTPAuth.URI.parse(MFA_SECRET);
   const otpCode = totp.generate();
+
   await page.getByRole("textbox", { name: "Verification code" }).fill(otpCode);
   await page.getByRole("button", { name: "Submit" }).click();
 
