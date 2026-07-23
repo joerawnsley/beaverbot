@@ -4,9 +4,9 @@ Beaverbot is an automation tool for logging on-the-job hours.
 
 > It's called beaverbot because it does the logging
 
-To automate logging your own hours, you can fork this repo to use the GitHub action, or clone it to run it locally.
+To automate logging your own hours, you can fork this repo to use the GitHub Action, or clone it to run it locally.
 
-> Please note: the process will fail if an entry is duplicated, so you may have to go in and edit entries manually if it fails.
+> Please note: Now the script requires access to MFA, it's recommended to use the GitHub Action to log your hours.
 
 ## Setup
 
@@ -15,7 +15,7 @@ Set up your OneAdvanced login, and add the details to 1Password.
 You'll need to:
 
 1. Open and unlock 1Password.
-2. Select the entry for oneadvanced, then select Edit.
+2. Select the entry for OneAdvanced, then select Edit.
 3. Select Add More, then select One-Time Password.
 4. Select the QR code to scan the QR code from your screen or clipboard.
 5. Select Save.
@@ -31,10 +31,12 @@ In your own fork of the repo, go to `Settings` > `Secrets & Variables` > `Action
 Select `New Repository Secret`, and add:
 
 ```
-USERNAME (your SmartAssessor username)
-PASSWORD (your SmartAssessor password)
+USERNAME (your OneAdvanced username)
+PASSWORD (your OneAdvanced password)
 MFA_SECRET (your MFA secret)
 ```
+
+Update `data.json` with your on the job day/hour entries for the week.
 
 Commit your changes and manually trigger the GitHub Action to log your on the job hours.
 
@@ -43,12 +45,16 @@ Commit your changes and manually trigger the GitHub Action to log your on the jo
 If you want to run the program locally, you'll need to add a `.env` to the root of the directory, containing:
 
 ```
-USERNAME (your SmartAssessor username)
-PASSWORD (your SmartAssessor password)
+USERNAME (your OneAdvanced username)
+PASSWORD (your OneAdvanced password)
 MFA_SECRET (your MFA secret)
 ```
 
 Update `data.json` with your on the job day/hour entries for the week.
+
+Run `npx playwright test` to log your on the job hours.
+
+## Data Example
 
 An example of `data.json` is available in `data-example.json`, but fields for each entry are:
 
@@ -60,5 +66,3 @@ An example of `data.json` is available in `data-example.json`, but fields for ea
     "minsSpent": "0" // optional entry
   },
 ```
-
-Run `npx playwright test` to log your on the job hours.
