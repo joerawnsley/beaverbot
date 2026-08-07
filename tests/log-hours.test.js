@@ -15,6 +15,14 @@ test("Log 'On The Job' Hours", async ({ page }) => {
     },
   );
 
+  // Tutorial Popup Handler
+  await page.addLocatorHandler(
+    page.getByRole("button", { name: "Explore later" }),
+    async (locator) => {
+      await locator.click();
+    },
+  );
+
   // 1. Authentication
   await page.goto("https://education.oneadvanced.com");
   await page.getByRole("textbox", { name: "Username" }).fill(USERNAME);
