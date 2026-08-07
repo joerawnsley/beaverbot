@@ -68,7 +68,7 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
     console.log(`Processing: ${entry.date}`);
 
-    await page.getByRole("button", { name: "Add Hours" }).click();
+    await page.getByRole("button", { name: "Add Hours" }).first().click();
 
     const addHoursModal = page.getByRole("dialog", {
       name: "Add Off-the-Job Hours",
