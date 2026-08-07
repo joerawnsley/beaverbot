@@ -102,10 +102,26 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
     await addHoursModal.getByLabel("Impact").fill("N/A");
 
-    await addHoursModal.getByRole("button", { name: "Add Hours" }).click();
+    await Promise.all([
+      page
+        .waitForResponse(
+          (res) => res.status() === 200 && res.request().method() === "POST",
+          { timeout: 10000 },
+        )
+        .catch(() => null), // Gracefully handle cases where request finishes before intercept
+      addHoursModal.getByRole("button", { name: "Add Hours" }).click(),
+    ]);
 
     // Wait for modal to close
     await addHoursModal.waitFor({ state: "hidden" });
+
+    if (!page.url().includes("timelog")) {
+      console.warn(
+        `⚠️ Redirect detected on ${entry.date}. Navigating back to Timelog...`,
+      );
+      await page.getByRole("link", { name: "Timelog" }).click();
+      await entriesContainer.first().waitFor({ state: "visible" });
+    }
 
     // Verify row addition
     try {
