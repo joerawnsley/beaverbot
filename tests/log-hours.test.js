@@ -7,6 +7,14 @@ const PASSWORD = process.env.PASSWORD;
 const MFA_SECRET = process.env.MFA_SECRET;
 
 test("Log 'On The Job' Hours", async ({ page }) => {
+  // Survey Popup Handler
+  await page.addLocatorHandler(
+    page.getByRole("button", { name: "Remind Me Later" }),
+    async (locator) => {
+      await locator.click();
+    },
+  );
+
   // 1. Authentication
   await page.goto("https://education.oneadvanced.com");
   await page.getByRole("textbox", { name: "Username" }).fill(USERNAME);
