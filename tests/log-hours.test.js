@@ -77,11 +77,11 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
     const dateInput = addHoursModal.getByLabel("Activity date");
     await dateInput.fill(entry.date);
-    await dateInput.blur();
+    await dateInput.press("Tab");
 
     const timeInput = addHoursModal.getByLabel("Time started");
     await timeInput.fill(entry.startTime);
-    await timeInput.blur();
+    await timeInput.press("Tab");
 
     await addHoursModal
       .getByRole("spinbutton", { name: "Hours" })
