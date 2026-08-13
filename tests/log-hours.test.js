@@ -17,7 +17,7 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
   // Tutorial Popup Handler
   await page.addLocatorHandler(
-    page.getByRole("button", { name: "Dismiss Button" }),
+    page.getByText("button", { name: "Explore later" }),
     async (locator) => {
       await locator.click();
     },
