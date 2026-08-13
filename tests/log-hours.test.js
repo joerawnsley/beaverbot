@@ -115,6 +115,8 @@ test("Log 'On The Job' Hours", async ({ page }) => {
       addHoursModal.getByRole("button", { name: "Add Hours" }).click(),
     ]);
 
+    await addHoursModal.waitFor({ state: "detached", timeout: 10000 });
+
     // Wait for modal to close
     await addHoursModal.waitFor({ state: "hidden" });
 
