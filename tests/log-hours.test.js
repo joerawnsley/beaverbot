@@ -17,7 +17,7 @@ test("Log 'On The Job' Hours", async ({ page }) => {
 
   // Tutorial Popup Handler
   await page.addLocatorHandler(
-    page.getByText("button", { name: "Explore later" }),
+    page.getByRole("button", { name: "Dismiss Button" }),
     async (locator) => {
       await locator.click();
     },
@@ -105,7 +105,10 @@ test("Log 'On The Job' Hours", async ({ page }) => {
     await Promise.all([
       page
         .waitForResponse(
-          (res) => res.status() === 200 && res.request().method() === "POST",
+          (res) =>
+            res.status() === 200 &&
+            res.request().method() === "POST" &&
+            res.url().includes("/timelog"),
           { timeout: 10000 },
         )
         .catch(() => null), // Gracefully handle cases where request finishes before intercept
