@@ -42,17 +42,31 @@ Commit your changes and manually trigger the GitHub Action to log your on the jo
 
 ## Running locally
 
-If you want to run the program locally, you'll need to add a `.env` to the root of the directory, containing:
+This project uses [pnpm](https://pnpm.io) (see `engines`/`packageManager` in `package.json`) - installing with npm or yarn instead will produce a mismatched lockfile.
 
-```
-USERNAME (your OneAdvanced username)
-PASSWORD (your OneAdvanced password)
-MFA_SECRET (your MFA secret)
-```
+1. Install [pnpm](https://pnpm.io/installation) (`>=10.0.0`), then install dependencies:
 
-Update `data.json` with your on the job day/hour entries for the week.
+   ```
+   pnpm install
+   ```
 
-Run `npx playwright test` to log your on the job hours.
+2. Install the Playwright browser binary (one-time setup):
+
+   ```
+   pnpm exec playwright install chromium
+   ```
+
+3. Add a `.env` to the root of the directory, containing:
+
+   ```
+   USERNAME (your OneAdvanced username)
+   PASSWORD (your OneAdvanced password)
+   MFA_SECRET (your MFA secret)
+   ```
+
+4. Update `data.json` with your on the job day/hour entries for the week.
+
+5. Run `pnpm exec playwright test` (or `pnpm test`) to log your on the job hours.
 
 ## Data Example
 
