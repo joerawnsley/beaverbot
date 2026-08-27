@@ -4,3 +4,8 @@ playwright-report/
 blob-report/
 playwright/.cache/
 .env
+
+# This project uses pnpm (see engines/packageManager in package.json).
+# Don't commit an npm lockfile - it drifts from pnpm-lock.yaml and pollutes
+# node_modules/audit results with unrelated packages.
+package-lock.json

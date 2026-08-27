@@ -7,6 +7,10 @@ const PASSWORD = process.env.PASSWORD;
 const MFA_SECRET = process.env.MFA_SECRET;
 
 test("Log 'On The Job' Hours", async ({ page }) => {
+  // Scale the timeout with the number of entries being processed - the
+  // default 30s budget only covers auth/MFA plus one or two modal round-trips.
+  test.setTimeout(60_000 + logEntries.length * 30_000);
+
   // Survey Popup Handler
   await page.addLocatorHandler(
     page.getByRole("button", { name: "Remind Me Later" }),
@@ -100,25 +104,28 @@ test("Log 'On The Job' Hours", async ({ page }) => {
       })
       .click();
 
+    // Impact evidence is tracked elsewhere; this field is required by the
+    // form but not used for anything downstream, so it's always "N/A".
     await addHoursModal.getByLabel("Impact").fill("N/A");
 
-    await Promise.all([
+    const [response] = await Promise.all([
       page
         .waitForResponse(
           (res) =>
-            res.status() === 200 &&
-            res.request().method() === "POST" &&
-            res.url().includes("/timelog"),
+            res.request().method() === "POST" && res.url().includes("/timelog"),
           { timeout: 10000 },
         )
-        .catch(() => null), // Gracefully handle cases where request finishes before intercept
+        .catch(() => null), // The request may resolve before we start listening; that's fine.
       addHoursModal.getByRole("button", { name: "Add Hours" }).click(),
     ]);
 
-    await addHoursModal.waitFor({ state: "detached", timeout: 10000 });
+    if (response && !response.ok()) {
+      throw new Error(
+        `Failed to submit hours for ${entry.date}: ${response.status()} ${response.statusText()}`,
+      );
+    }
 
-    // Wait for modal to close
-    await addHoursModal.waitFor({ state: "hidden" });
+    await addHoursModal.waitFor({ state: "hidden", timeout: 10000 });
 
     if (!page.url().includes("timelog")) {
       console.warn(
