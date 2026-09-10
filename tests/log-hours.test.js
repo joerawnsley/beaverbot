@@ -45,103 +45,177 @@ test("Log 'On The Job' Hours", async ({ page }) => {
   await mfaInput.fill(otpCode);
   await page.getByRole("button", { name: "Submit" }).click();
 
-  // 3. Navigation
-  await page.getByRole("link", { name: "Timelog" }).click();
+  // 3. Return to old version
+  await page.goto("https://smartassessor.co.uk/Account");
+  await page.getByRole("textbox", { name: "Username" }).fill(USERNAME);
+  await page.getByRole("textbox", { name: "Password" }).fill(PASSWORD);
+  await page.getByRole("button", { name: "Log In" }).click();
 
-  const entriesContainer = page.locator(".mds-accordion");
 
-  // Wait for the timelog accordion to render before reading entries
-  await entriesContainer.first().waitFor({ state: "visible" });
+  await page.getByRole("link", { name: /DEVOPS ENGINEER/ }).click();
+  await page.getByRole("link", { name: "Time Log" }).click();
 
-  // 4. Process Entries
   for (const entry of logEntries) {
-    const formattedHoursSpent = `${entry.hoursSpent}h`;
-    const displayDate = entry.date.replace(/\/20(\d{2})$/, "/$1");
-
-    const existingRow = entriesContainer
-      .locator(".mds-accordion-content__content > div.mu-w-100")
-      .filter({ hasText: displayDate })
-      .filter({ hasText: formattedHoursSpent });
-
-    if ((await existingRow.count()) > 0) {
-      console.log(
-        `⏩ ${entry.date} (${formattedHoursSpent}) already exists. Skipping...`,
-      );
-      continue;
-    }
-
     console.log(`Processing: ${entry.date}`);
 
-    await page.getByRole("button", { name: "Add Hours" }).first().click();
+    await page.getByRole("button", { name: "Add New Timelog Entry" }).click();
 
-    const addHoursModal = page.getByRole("dialog", {
-      name: "Add Off-the-Job Hours",
-    });
-    await addHoursModal.waitFor({ state: "visible" });
+    const logFrame = page.frameLocator("#formModalFrame");
 
-    const dateInput = addHoursModal.getByLabel("Activity date");
-    await dateInput.fill(entry.date);
-    await dateInput.press("Tab");
+    await logFrame
+      .getByRole("textbox", { name: "Select Activity Date" })
+      .fill(entry.date);
 
-    const timeInput = addHoursModal.getByLabel("Time started");
-    await timeInput.fill(entry.startTime);
-    await timeInput.press("Tab");
+    await logFrame
+      .getByLabel("Select Activity Type")
+      .selectOption({ label: "Gaining technical experience by doing my job" });
 
-    await addHoursModal
-      .getByRole("spinbutton", { name: "Hours" })
-      .fill(entry.hoursSpent);
+    await logFrame
+      .getByLabel("Select Course")
+      .selectOption({ label: "DEVOPS ENGINEER (2021) 548" });
 
-    if (entry.minsSpent) {
-      await addHoursModal
-        .getByRole("spinbutton", { name: "Minutes" })
-        .fill(entry.minsSpent);
-    }
+    await logFrame
+      .getByLabel("Select Assessor")
+      .selectOption({ label: "Dom Patmore" });
 
-    await addHoursModal.locator("#activity-type").click();
-    await page
-      .getByRole("option", {
-        name: "Gaining technical experience by doing my job",
+    await logFrame
+      .getByLabel("Was it on the Job?")
+      .selectOption({ label: "On the job" });
+
+    await logFrame
+      .getByRole("textbox", { name: "Time Spent on Activity" })
+      .fill(entry.timeSpent);
+
+    await logFrame
+      .getByRole("textbox", { name: "Activity Start Time" })
+      .fill(entry.startTime);
+
+    await logFrame
+      .getByRole("textbox", { name: "What impact has this activity" })
+      .fill("N/A");
+
+    await logFrame.getByRole("button", { name: "Add Activity" }).click();
+
+    await page.locator("#formModalFrame").waitFor({ state: "hidden" });
+
+    const timesheetTable = page.locator("table.timesheet");
+
+    const expectedRow = timesheetTable
+      .locator("tr")
+      .filter({
+        hasText: entry.date,
       })
-      .click();
+      .filter({
+        hasText: entry.timeSpent,
+      });
 
-    // Impact evidence is tracked elsewhere; this field is required by the
-    // form but not used for anything downstream, so it's always "N/A".
-    await addHoursModal.getByLabel("Impact").fill("N/A");
-
-    const [response] = await Promise.all([
-      page
-        .waitForResponse(
-          (res) =>
-            res.request().method() === "POST" && res.url().includes("/timelog"),
-          { timeout: 10000 },
-        )
-        .catch(() => null), // The request may resolve before we start listening; that's fine.
-      addHoursModal.getByRole("button", { name: "Add Hours" }).click(),
-    ]);
-
-    if (response && !response.ok()) {
-      throw new Error(
-        `Failed to submit hours for ${entry.date}: ${response.status()} ${response.statusText()}`,
-      );
-    }
-
-    await addHoursModal.waitFor({ state: "hidden", timeout: 10000 });
-
-    if (!page.url().includes("timelog")) {
-      console.warn(
-        `⚠️ Redirect detected on ${entry.date}. Navigating back to Timelog...`,
-      );
-      await page.getByRole("link", { name: "Timelog" }).click();
-      await entriesContainer.first().waitFor({ state: "visible" });
-    }
-
-    // Verify row addition
     try {
-      await expect(existingRow.first()).toBeVisible({ timeout: 5000 });
-      console.log(`✅ ${entry.date} has been added successfully.`);
+      await expect(expectedRow).toBeVisible({ timeout: 5000 });
+      console.log(`✅ ${entry.date} has been added`);
     } catch (error) {
-      console.error(`❌ Couldn't find row for ${entry.date} after submitting.`);
+      console.error(`Couldn'tt find ${entry.date}`);
       throw error;
     }
   }
+
+  
+//   // 3. Navigation
+//   await page.getByRole("link", { name: "Timelog" }).click();
+
+//   const entriesContainer = page.locator(".mds-accordion");
+
+//   // Wait for the timelog accordion to render before reading entries
+//   await entriesContainer.first().waitFor({ state: "visible" });
+
+//   // 4. Process Entries
+//   for (const entry of logEntries) {
+//     const formattedHoursSpent = `${entry.hoursSpent}h`;
+//     const displayDate = entry.date.replace(/\/20(\d{2})$/, "/$1");
+
+//     const existingRow = entriesContainer
+//       .locator(".mds-accordion-content__content > div.mu-w-100")
+//       .filter({ hasText: displayDate })
+//       .filter({ hasText: formattedHoursSpent });
+
+//     if ((await existingRow.count()) > 0) {
+//       console.log(
+//         `⏩ ${entry.date} (${formattedHoursSpent}) already exists. Skipping...`,
+//       );
+//       continue;
+//     }
+
+//     console.log(`Processing: ${entry.date}`);
+
+//     await page.getByRole("button", { name: "Add Hours" }).first().click();
+
+//     const addHoursModal = page.getByRole("dialog", {
+//       name: "Add Off-the-Job Hours",
+//     });
+//     await addHoursModal.waitFor({ state: "visible" });
+
+//     const dateInput = addHoursModal.getByLabel("Activity date");
+//     await dateInput.fill(entry.date);
+//     await dateInput.press("Tab");
+
+//     const timeInput = addHoursModal.getByLabel("Time started");
+//     await timeInput.fill(entry.startTime);
+//     await timeInput.press("Tab");
+
+//     await addHoursModal
+//       .getByRole("spinbutton", { name: "Hours" })
+//       .fill(entry.hoursSpent);
+
+//     if (entry.minsSpent) {
+//       await addHoursModal
+//         .getByRole("spinbutton", { name: "Minutes" })
+//         .fill(entry.minsSpent);
+//     }
+
+//     await addHoursModal.locator("#activity-type").click();
+//     await page
+//       .getByRole("option", {
+//         name: "Gaining technical experience by doing my job",
+//       })
+//       .click();
+
+//     // Impact evidence is tracked elsewhere; this field is required by the
+//     // form but not used for anything downstream, so it's always "N/A".
+//     await addHoursModal.getByLabel("Impact").fill("N/A");
+
+//     const [response] = await Promise.all([
+//       page
+//         .waitForResponse(
+//           (res) =>
+//             res.request().method() === "POST" && res.url().includes("/timelog"),
+//           { timeout: 10000 },
+//         )
+//         .catch(() => null), // The request may resolve before we start listening; that's fine.
+//       addHoursModal.getByRole("button", { name: "Add Hours" }).click(),
+//     ]);
+
+//     if (response && !response.ok()) {
+//       throw new Error(
+//         `Failed to submit hours for ${entry.date}: ${response.status()} ${response.statusText()}`,
+//       );
+//     }
+
+//     await addHoursModal.waitFor({ state: "hidden", timeout: 10000 });
+
+//     if (!page.url().includes("timelog")) {
+//       console.warn(
+//         `⚠️ Redirect detected on ${entry.date}. Navigating back to Timelog...`,
+//       );
+//       await page.getByRole("link", { name: "Timelog" }).click();
+//       await entriesContainer.first().waitFor({ state: "visible" });
+//     }
+
+//     // Verify row addition
+//     try {
+//       await expect(existingRow.first()).toBeVisible({ timeout: 5000 });
+//       console.log(`✅ ${entry.date} has been added successfully.`);
+//     } catch (error) {
+//       console.error(`❌ Couldn't find row for ${entry.date} after submitting.`);
+//       throw error;
+//     }
+//   }
 });

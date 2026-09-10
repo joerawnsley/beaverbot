@@ -1,12 +1,22 @@
 [
   {
-    "date": "04/07/2026",
-    "hoursSpent": "8",
+    "date": "14/07/2026",
+    "timeSpent": "08:00",
     "startTime": "09:00"
   },
   {
-    "date": "05/07/2026",
-    "hoursSpent": "8",
+    "date": "15/07/2026",
+    "timeSpent": "08:00",
+    "startTime": "09:00"
+  },
+  {
+    "date": "16/07/2026",
+    "timeSpent": "08:00",
+    "startTime": "09:00"
+  },
+  {
+    "date": "17/07/2026",
+    "timeSpent": "08:00",
     "startTime": "09:00"
   }
 ]
